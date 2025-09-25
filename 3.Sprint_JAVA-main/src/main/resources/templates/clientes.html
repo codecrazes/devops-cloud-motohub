@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Clientes</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="motos-container">
+
+    <h2 th:text="${cliente.id} != null ? 'Editar Cliente' : 'Cadastrar Novo Cliente'"></h2>
+
+    <form th:action="@{/clientes}" method="post" th:object="${cliente}">
+        <input type="hidden" th:field="*{id}"/>
+        
+        <label>Nome:</label>
+        <input type="text" th:field="*{nome}" required/>
+
+        <label>Email:</label>
+        <input type="email" th:field="*{email}" required/>
+
+        <label>Telefone:</label>
+        <input type="text" th:field="*{telefone}" required/>
+
+        <button type="submit" th:text="${cliente.id} != null ? 'Salvar Alterações' : 'Cadastrar'"></button>
+    </form>
+
+    <h2>Lista de Clientes</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>Ações</th>
+        </tr>
+        <tr th:each="clienteItem : ${clientes}">
+            <td th:text="${clienteItem.id}"></td>
+            <td th:text="${clienteItem.nome}"></td>
+            <td th:text="${clienteItem.email}"></td>
+            <td th:text="${clienteItem.telefone}"></td>
+            <td>
+                <a th:href="@{/clientes/{id}(id=${clienteItem.id})}" class="link-edit">Editar</a> | 
+                
+                <form th:action="@{/clientes/{id}/delete(id=${clienteItem.id})}" method="post" style="display:inline;">
+                    <a href="#" onclick="this.closest('form').submit(); return false;" class="link-delete">Excluir</a>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <p><a th:href="@{/home}">Voltar</a></p>
+</div>
+<footer>
+    <p>&copy; 2025 Motohub - Todos os direitos reservados</p>
+</footer>
+</body>
+</html>

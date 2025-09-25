@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Intenções</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="motos-container">
+
+    <h2 th:text="${intencao.id != null} ? 'Editar Intenção' : 'Registrar Nova Intenção'"></h2>
+
+    <form th:action="@{/intencoes}" method="post">
+        <input type="hidden" name="id" th:value="${intencao.id}" />
+
+        <label>Cliente:</label>
+        <select name="clienteId" required>
+            <option value="" disabled th:if="${intencao.cliente == null}" selected>-- Selecione --</option>
+            <option th:each="cliente : ${clientes}" 
+                    th:value="${cliente.id}" 
+                    th:text="${cliente.nome}"
+                    th:selected="${intencao.cliente != null and cliente.id == intencao.cliente.id}">
+            </option>
+        </select>
+
+        <label>Moto:</label>
+        <select name="motoId" required>
+            <option value="" disabled th:if="${intencao.moto == null}" selected>-- Selecione --</option>
+            <option th:each="moto : ${motos}" 
+                    th:value="${moto.id}" 
+                    th:text="${moto.modelo}"
+                    th:selected="${intencao.moto != null and moto.id == intencao.moto.id}">
+            </option>
+        </select>
+
+        <label>Tipo:</label>
+        <select name="tipo" required>
+            <option value="VENDA" th:selected="${intencao.tipo != null and intencao.tipo.name() == 'VENDA'}">Comprar</option>
+            <option value="ALUGUEL" th:selected="${intencao.tipo != null and intencao.tipo.name() == 'ALUGUEL'}">Alugar</option>
+        </select>
+
+        <button type="submit" th:text="${intencao.id != null} ? 'Salvar Alterações' : 'Registrar'"></button>
+    </form>
+
+    <h2>Lista de Intenções</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Moto</th>
+            <th>Tipo</th>
+            <th>Ações</th>
+        </tr>
+        <tr th:each="intencaoItem : ${intencoes}">
+            <td th:text="${intencaoItem.id}"></td>
+            <td th:text="${intencaoItem.cliente.nome}"></td>
+            <td th:text="${intencaoItem.moto.modelo}"></td>
+            <td th:text="${intencaoItem.tipo}"></td>
+            <td>
+                <a th:href="@{/intencoes/{id}(id=${intencaoItem.id})}" class="link-edit">Editar</a> | 
+                <form th:action="@{/intencoes/{id}/delete(id=${intencaoItem.id})}" method="post" style="display:inline;">
+                    <a href="#" onclick="this.closest('form').submit(); return false;" class="link-delete">Excluir</a>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <p><a th:href="@{/home}">Voltar</a></p>
+</div>
+
+<footer>
+    <p>&copy; 2025 Motohub - Todos os direitos reservados</p>
+</footer>
+</body>
+</html>

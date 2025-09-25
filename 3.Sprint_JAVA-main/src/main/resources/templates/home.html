@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Motohub - Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="home-container">
+        <h1>Bem-vindo ao Motohub</h1>
+
+        <div class="cards-container">
+            <div class="card">
+                <img th:src="@{/images/motos.jpg}" alt="Motos">
+                <h2>Motos</h2>
+                <p>Gerencie todas as motos disponíveis para venda ou aluguel. Cadastre novas motos, edite informações ou visualize detalhes.</p>
+                <a th:href="@{/motos}">Ir para Motos</a>
+            </div>
+
+            <div class="card">
+                <img th:src="@{/images/intencoes.jpg}" alt="Intenções">
+                <h2>Intenções</h2>
+                <p>Visualize e gerencie as intenções de compra ou aluguel dos clientes.</p>
+                <a th:href="@{/intencoes}">Ir para Intenções</a>
+            </div>
+
+            <div class="card">
+                <img th:src="@{/images/clientes.png}" alt="Clientes">
+                <h2>Clientes</h2>
+                <p>Cadastre, edite ou visualize informações dos clientes. Gerencie seu histórico e preferências em um só lugar.</p>
+                <a th:href="@{/clientes}">Ir para Clientes</a>
+            </div>
+
+            <div class="card">
+                <img th:src="@{/images/usuarios.jpg}" alt="Usuários">
+                <h2>Usuários</h2>
+                <p>Visualize todos os usuários cadastrados no sistema.</p>
+                <a th:href="@{/usuarios}">Ir para Usuários</a>
+            </div>
+        </div>
+
+        <div class="logout">
+            <a th:href="@{/logout}">Sair</a>
+        </div>
+    </div>
+	<footer>
+	    <p>&copy; 2025 Motohub - Todos os direitos reservados</p>
+	</footer>
+</body>
+</html>
