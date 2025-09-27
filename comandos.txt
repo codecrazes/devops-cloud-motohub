@@ -1,0 +1,8 @@
+az login 
+
+chmod +x scripts/01_azure_sql.sh
+./scripts/01_azure_sql.sh 
+
+chmod +x scripts/02_sql_firewall_dev_ip_open.sh
+./scripts/02_sql_firewall_dev_ip_open.sh
+

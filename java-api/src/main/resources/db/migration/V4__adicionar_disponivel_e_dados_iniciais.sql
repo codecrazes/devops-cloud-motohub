@@ -1,6 +1,6 @@
-ALTER TABLE moto ADD COLUMN disponivel BOOLEAN DEFAULT TRUE;
+ALTER TABLE moto ADD disponivel BIT DEFAULT 1;
 
-INSERT INTO usuario (username, password, role) VALUES 
+INSERT INTO usuario (username, password, [role]) VALUES 
 ('admin', '1234', 'ADMIN'),
 ('user', '1234', 'USER');
 
