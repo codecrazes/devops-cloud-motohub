@@ -1,23 +1,20 @@
-# Maven
+# Java/Maven
 target/
-!.mvn/wrapper/maven-wrapper.jar
-.mvn/wrapper/maven-wrapper.jar
-
-# IDEs
-.idea/
-*.iml
-*.ipr
-*.iws
-.project
-.classpath
-.settings/
-.vscode/
-
-# OS
-.DS_Store
-
-# Logs
+*.class
 *.log
+*.iml
+*.idea/
+*.project
+*.settings/
+*.classpath
 
-# Env
+# Node (se houver front)
+node_modules/
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Env/Secrets
+infra/.env
 .env

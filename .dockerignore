@@ -1,0 +1,9 @@
+.git
+.gitignore
+**/.DS_Store
+target/test-classes
+target/surefire-reports
+node_modules
+infra
+docs
+tests

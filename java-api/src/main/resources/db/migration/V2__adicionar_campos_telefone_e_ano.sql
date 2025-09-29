@@ -1,2 +1,0 @@
-ALTER TABLE cliente ADD telefone VARCHAR(20);
-ALTER TABLE moto ADD ano INT NOT NULL;
