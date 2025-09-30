@@ -1,8 +1,15 @@
+-- Realizar o login na Azure via CLI
+
 az login 
 
-chmod +x scripts/01_azure_sql.sh
-./scripts/01_azure_sql.sh 
+-- Dar permissão para os scripts (FAZER COM TODOS SCRIPTS)
 
-chmod +x scripts/02_sql_firewall_dev_ip_open.sh
-./scripts/02_sql_firewall_dev_ip_open.sh
+chmod +x ./infra/* 
 
+-- Executar os scripts em ordem crescente
+
+./infra/01_rg.sh
+
+-- Conectar no banco MYSQL
+
+mysql -uroot -p"$MYSQL_ROOT_PASSWORD" motohub

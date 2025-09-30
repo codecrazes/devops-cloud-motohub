@@ -1,0 +1,77 @@
+apiVersion: 2021-10-01
+location: ${AZ_LOCATION}
+name: motohub-${AZ_RM_LC}
+properties:
+  containers:
+    - name: mysql
+      properties:
+        image: ${MYSQL_IMAGE}
+        ports:
+          - port: 3306
+        environmentVariables:
+          - name: MYSQL_ROOT_PASSWORD
+            secureValue: "${MYSQL_ROOT_PASSWORD}"
+          - name: MYSQL_DATABASE
+            value: "${MYSQL_DB}"
+          - name: MYSQL_USER
+            value: "${MYSQL_APP_USER}"
+          - name: MYSQL_PASSWORD
+            secureValue: "${MYSQL_APP_PASSWORD}"
+        resources:
+          requests:
+            cpu: 1.0
+            memoryInGb: 2.0
+        volumeMounts:
+          - name: mysql-share
+            mountPath: /mnt/share
+
+    - name: motohub-api
+      properties:
+        image: ${ACR_LOGIN_SERVER}/${APP_IMAGE_REPO}:${APP_IMAGE_TAG}
+        ports:
+          - port: ${APP_PORT}
+        environmentVariables:
+          - name: APP_PORT
+            value: "${APP_PORT}"
+          - name: DB_HOST
+            value: "127.0.0.1"
+          - name: DB_PORT
+            value: "3306"
+          - name: SPRING_DATASOURCE_URL
+            value: "${SPRING_DATASOURCE_URL}"
+          - name: SPRING_DATASOURCE_USERNAME
+            value: "${SPRING_DATASOURCE_USERNAME}"
+          - name: SPRING_DATASOURCE_PASSWORD
+            secureValue: "${SPRING_DATASOURCE_PASSWORD}"
+          - name: SPRING_AUTOCONFIGURE_EXCLUDE
+            value: "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"
+          - name: SPRING_FLYWAY_ENABLED
+            value: "false"
+          - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+            value: "none"
+        resources:
+          requests:
+            cpu: 1.0
+            memoryInGb: 2.0
+
+  osType: Linux
+  ipAddress:
+    type: Public
+    ports:
+      - protocol: TCP
+        port: ${APP_PORT}
+    dnsNameLabel: motohub-${AZ_RM_LC}
+
+  imageRegistryCredentials:
+    - server: ${ACR_LOGIN_SERVER}
+      username: ${ACR_USERNAME}
+      password: ${ACR_PASSWORD}
+
+  volumes:
+    - name: mysql-share
+      azureFile:
+        shareName: ${FILESHARE_NAME}
+        storageAccountName: ${STG_NAME}
+        storageAccountKey: ${STG_KEY}
+
+type: Microsoft.ContainerInstance/containerGroups
