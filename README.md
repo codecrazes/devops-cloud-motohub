@@ -2,6 +2,8 @@
 
 Entrega da disciplina **DevOps Tools & Cloud Computing** usando **Java (Spring Boot)**, **Docker (não-root)**, **Azure Container Registry (ACR)** e **Azure Container Instances (ACI)** com **MySQL em container** (persistência em **Azure Files**).
 
+link youtube: https://youtu.be/IBxcHha2Ui8
+
 ## 📌 Descrição da solução
 **Motohub** é um **gestor de estoque de motos** desenvolvida para a empresa **Mottu**.  
 A aplicação disponibiliza uma **API REST** para cadastrar, consultar, atualizar e excluir motos (CRUD), facilitando a **organização e localização** do estoque. O desenho prevê **integração com app mobile** e **dispositivos IoT** (por exemplo, telemetria), que consomem a API.
