@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
+
+# Esse script aplica o script de DDL (script_db.sql) no banco MySQL rodando no ACI.
+# Ele copia o script_db.sql para o File Share, e depois executa ele dentro do container MySQL.
+# Use esse script sempre que precisar aplicar mudanças no esquema do banco (DDL).
+# Caso o flyway esteja ativo na aplicação, não é necessário rodar esse script.
+
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
 source "$HERE/variables.sh"
 
-# Segredos do storage
 if [[ ! -f "$HERE/.storage_secrets" ]]; then
   echo "Faltando $HERE/.storage_secrets. Rode 02_storage.sh primeiro." >&2
   exit 1
 fi
-# shellcheck disable=SC1090
 source "$HERE/.storage_secrets"
 
 SQL_LOCAL="$ROOT/script_db.sql"
@@ -31,7 +35,6 @@ if [[ ! -f "$SQL_LOCAL" ]]; then
   exit 1
 fi
 
-# 1) Wrapper que roda dentro do container (sem aspas complicadas)
 cat > "$WRAPPER_LOCAL" <<'SH'
 #!/bin/sh
 set -e

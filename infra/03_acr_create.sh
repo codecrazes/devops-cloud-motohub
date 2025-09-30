@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Esse script cria o Azure Container Registry (ACR) usado para armazenar as imagens Docker da aplicação
+
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/variables.sh"

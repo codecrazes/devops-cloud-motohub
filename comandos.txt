@@ -1,10 +1,15 @@
+-- Realizar o login na Azure via CLI
+
 az login 
 
-chmod +x ./infra/* (FAZER COM TODOS SCRIPTS)
+-- Dar permissão para os scripts (FAZER COM TODOS SCRIPTS)
+
+chmod +x ./infra/* 
+
+-- Executar os scripts em ordem crescente
 
 ./infra/01_rg.sh
 
-
-CG_NAME="motohub-$(echo "$AZ_RM" | tr '[:upper:]' '[:lower:]')"
+-- Conectar no banco MYSQL
 
 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" motohub

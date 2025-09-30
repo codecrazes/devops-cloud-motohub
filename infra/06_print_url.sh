@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Esse script imprime a URL de acesso à API rodando no ACI (FQDN e IP).
+
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/variables.sh"

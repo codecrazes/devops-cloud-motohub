@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Esse script deleta o Resource Group e todos os recursos associados a ele.
+
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/variables.sh"

@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
+
+# Esse script faz o build da imagem Docker da aplicação e faz o push para o ACR criado no passo anterior
+# A imagem é construída localmente, então é necessário ter o Docker instalado e rodando
+
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 source "$HERE/variables.sh"
 
-# Pega o loginServer e remove qualquer \r (Windows/CRLF)
 LOGIN_SERVER="$(az acr show --name "$ACR_NAME" --query loginServer -o tsv | tr -d '\r')"
 
 echo ">> Login no ACR (docker login via admin creds)"
 ACR_USER="$(az acr credential show --name "$ACR_NAME" --query username -o tsv | tr -d '\r')"
 ACR_PASS="$(az acr credential show --name "$ACR_NAME" --query 'passwords[0].value' -o tsv | tr -d '\r')"
 
-# Mostra o host para debug (sem https://)
 echo "Registry: ${LOGIN_SERVER}"
 
-# Login no registry (sem https://)
 echo "$ACR_PASS" | docker login "$LOGIN_SERVER" --username "$ACR_USER" --password-stdin
 
 echo ">> Build local (Dockerfile em ./app)"

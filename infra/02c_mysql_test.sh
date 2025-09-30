@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Esse script testa a conexão com o banco MySQL rodando no ACI, e lista as tabelas do banco.
+
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/variables.sh"

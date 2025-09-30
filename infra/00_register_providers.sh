@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# Esse script registra os provedores necessários na assinatura atual do Azure.
+# Execute esse script apenas uma vez, ou caso algum provedor esteja com o estado "NotRegistered".
+
 set -euo pipefail
 
 req() {

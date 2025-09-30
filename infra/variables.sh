@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Esse script carrega as variáveis de ambiente do arquivo .env e as imprime no console.
+
 set -euo pipefail
 
 ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.env"
