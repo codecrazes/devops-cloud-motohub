@@ -40,9 +40,22 @@ stages:
   dependsOn: Build
   jobs:
   - job: BuildAndPushImage
-    steps:
-    - script: docker version
+    steps:   
+    - script: |
+        whoami
+        id
+        groups
+        getent group docker
+        ls -l /var/run/docker.sock
+        stat -c '%U %G %a' /var/run/docker.sock
+        env | sort | sed -n '1,120p'
+      displayName: DiagnoseUserAndSocket
+
+    - script: |
+        echo DOCKER_HOST=${DOCKER_HOST}
+        docker version
       displayName: CheckDocker
+    
     - task: Docker@2
       inputs:
         containerRegistry: sc-acr-motohub
