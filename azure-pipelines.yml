@@ -68,9 +68,13 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           set -e
+          if [ -z "$(ACI_NAME)" ] || [ -z "$(DNS_LABEL)" ]; then
+            echo "ACI_NAME ou DNS_LABEL nao definidos"
+            exit 2
+          fi
           st=$(az provider show --namespace Microsoft.ContainerInstance --query registrationState -o tsv || echo NotRegistered)
           if [ "$st" != "Registered" ]; then
-            echo "Microsoft.ContainerInstance nao registrado na subscription. Registre via Portal ou conceda permissao ao service principal."
+            echo "Microsoft.ContainerInstance nao registrado"
             exit 2
           fi
           az group create -n $(AZ_RG) -l $(AZ_LOCATION) -o none
@@ -83,6 +87,8 @@ stages:
             --image "$IMAGE" \
             --cpu 1 \
             --memory 1.5 \
+            --os-type Linux \
+            --restart-policy Always \
             --registry-login-server "$ACR_LOGIN_SERVER" \
             --registry-username "$(ACR_USERNAME)" \
             --registry-password "$(ACR_PASSWORD)" \
