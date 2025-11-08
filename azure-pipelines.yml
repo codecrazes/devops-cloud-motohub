@@ -41,10 +41,15 @@ stages:
   jobs:
   - job: BuildAndPushImage
     steps:
-    - task: AzureCLI@2
+    - script: docker version
+      displayName: CheckDocker
+    - task: Docker@2
       inputs:
-        azureSubscription: sc-azurerm-motohub
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
-          az acr build -r $(ACR_NAME) -t motohub:$(Build.BuildId) -t motohub:latest app
+        containerRegistry: sc-acr-motohub
+        repository: motohub
+        command: buildAndPush
+        Dockerfile: app/Dockerfile
+        buildContext: app
+        tags: |
+          $(Build.BuildId)
+          latest
