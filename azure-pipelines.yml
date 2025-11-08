@@ -54,3 +54,39 @@ stages:
           sudo -n docker build -t "$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)" -t "$ACR_LOGIN_SERVER/motohub:latest" app
           sudo -n docker push "$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)"
           sudo -n docker push "$ACR_LOGIN_SERVER/motohub:latest"
+
+- stage: Deploy
+  displayName: DeployACI
+  dependsOn: Image
+  jobs:
+  - job: DeployACI
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: sc-azurerm-motohub
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --query loginServer -o tsv)
+          IMAGE="$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)"
+          az container delete -g $(AZ_RG) -n $(ACI_NAME) --yes || true
+          az container create \
+            -g $(AZ_RG) \
+            -n $(ACI_NAME) \
+            --image "$IMAGE" \
+            --cpu 1 \
+            --memory 1.5 \
+            --registry-login-server "$ACR_LOGIN_SERVER" \
+            --registry-username "$(ACR_USERNAME)" \
+            --registry-password "$(ACR_PASSWORD)" \
+            --dns-name-label $(DNS_LABEL) \
+            --ports $(APP_PORT) \
+            --environment-variables \
+              APP_PORT=$(APP_PORT) \
+              SPRING_DATASOURCE_URL=$(SPRING_DATASOURCE_URL) \
+              SPRING_DATASOURCE_USERNAME=$(SPRING_DATASOURCE_USERNAME) \
+              SPRING_DATASOURCE_PASSWORD=$(SPRING_DATASOURCE_PASSWORD) \
+              SPRING_JPA_HIBERNATE_DDL_AUTO=none \
+              SPRING_FLYWAY_ENABLED=true
+          az container show -g $(AZ_RG) -n $(ACI_NAME) --query "{state:instanceView.state,fqdn:ipAddress.fqdn,ip:ipAddress.ip}" -o table
