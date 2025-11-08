@@ -7,7 +7,7 @@ variables:
 - group: vg-motohub
 
 pool:
-  vmImage: ubuntu-latest
+  name: self-hosted-linux
 
 stages:
 - stage: Build
