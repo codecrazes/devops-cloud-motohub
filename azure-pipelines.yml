@@ -41,24 +41,16 @@ stages:
   jobs:
   - job: BuildAndPushImage
     steps:
-    - script: |
-        echo "Agent user: $(whoami)"
-        id
-        getent group docker || true
-        ls -l /var/run/docker.sock || true
-        docker version || true
-        newgrp docker <<'EOF'
-        id
-        docker version || true
-        EOF
-      displayName: DiagnoseDocker
-    - task: Docker@2
+    - task: AzureCLI@2
       inputs:
-        containerRegistry: sc-acr-motohub
-        repository: motohub
-        command: buildAndPush
-        Dockerfile: app/Dockerfile
-        buildContext: app
-        tags: |
-          $(Build.BuildId)
-          latest
+        azureSubscription: sc-azurerm-motohub
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --query loginServer -o tsv)
+          ACR_USER=$(az acr credential show --name $(ACR_NAME) --query username -o tsv)
+          ACR_PASS=$(az acr credential show --name $(ACR_NAME) --query 'passwords[0].value' -o tsv)
+          echo "$ACR_PASS" | sudo -n docker login "$ACR_LOGIN_SERVER" --username "$ACR_USER" --password-stdin
+          sudo -n docker build -t "$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)" -t "$ACR_LOGIN_SERVER/motohub:latest" app
+          sudo -n docker push "$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)"
+          sudo -n docker push "$ACR_LOGIN_SERVER/motohub:latest"
