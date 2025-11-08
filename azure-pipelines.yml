@@ -15,14 +15,18 @@ stages:
   jobs:
   - job: BuildTest
     steps:
+    - script: |
+        java -version
+        echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+      displayName: CheckJava
     - task: Maven@3
       inputs:
         mavenPomFile: app/pom.xml
         goals: clean test package
         publishJUnitResults: true
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
-        javaHomeOption: JDKVersion
-        jdkVersionOption: 1.17
+        javaHomeOption: Path
+        jdkDirectory: /usr/lib/jvm/java-17-openjdk-amd64
         jdkArchitectureOption: x64
     - task: PublishBuildArtifacts@1
       inputs:
