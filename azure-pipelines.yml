@@ -23,6 +23,7 @@ stages:
       inputs:
         mavenPomFile: app/pom.xml
         goals: clean test package
+        options: -Dspring.profiles.active=test
         publishJUnitResults: true
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
         javaHomeOption: Path
