@@ -18,3 +18,5 @@ Thumbs.db
 # Env/Secrets
 infra/.env
 .env
+
+infra/.storage_secrets
