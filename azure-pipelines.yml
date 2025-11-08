@@ -40,22 +40,18 @@ stages:
   dependsOn: Build
   jobs:
   - job: BuildAndPushImage
-    steps:   
+    steps:
     - script: |
-        whoami
+        echo "Agent user: $(whoami)"
         id
-        groups
-        getent group docker
-        ls -l /var/run/docker.sock
-        stat -c '%U %G %a' /var/run/docker.sock
-        env | sort | sed -n '1,120p'
-      displayName: DiagnoseUserAndSocket
-
-    - script: |
-        echo DOCKER_HOST=${DOCKER_HOST}
-        docker version
-      displayName: CheckDocker
-    
+        getent group docker || true
+        ls -l /var/run/docker.sock || true
+        docker version || true
+        newgrp docker <<'EOF'
+        id
+        docker version || true
+        EOF
+      displayName: DiagnoseDocker
     - task: Docker@2
       inputs:
         containerRegistry: sc-acr-motohub
