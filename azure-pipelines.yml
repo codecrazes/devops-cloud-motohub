@@ -67,7 +67,7 @@ stages:
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
-          set -e
+          set -euo pipefail
           if [ -z "$(ACI_NAME)" ] || [ -z "$(DNS_LABEL)" ]; then
             echo "ACI_NAME ou DNS_LABEL nao definidos"
             exit 2
@@ -77,10 +77,14 @@ stages:
             echo "Microsoft.ContainerInstance nao registrado"
             exit 2
           fi
+
           az group create -n $(AZ_RG) -l $(AZ_LOCATION) -o none
+
           ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --query loginServer -o tsv)
           IMAGE="$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)"
+
           az container delete -g $(AZ_RG) -n $(ACI_NAME) --yes || true
+
           az container create \
             -g $(AZ_RG) \
             -n $(ACI_NAME) \
@@ -101,4 +105,27 @@ stages:
               SPRING_DATASOURCE_PASSWORD=$(SPRING_DATASOURCE_PASSWORD) \
               SPRING_JPA_HIBERNATE_DDL_AUTO=none \
               SPRING_FLYWAY_ENABLED=true
-          az container show -g $(AZ_RG) -n $(ACI_NAME) --query "{state:instanceView.state,fqdn:ipAddress.fqdn,ip:ipAddress.ip}" -o table
+
+          for i in $(seq 1 60); do
+            ps=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "provisioningState" -o tsv || echo Unknown)
+            st=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "instanceView.state" -o tsv || echo Unknown)
+            echo "provisioningState=$ps state=$st"
+            [ "$ps" = "Succeeded" ] && [ "$st" = "Running" ] && break
+            sleep 5
+          done
+
+          ps=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "provisioningState" -o tsv || echo Unknown)
+          st=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "instanceView.state" -o tsv || echo Unknown)
+          if [ "$ps" != "Succeeded" ] || [ "$st" != "Running" ]; then
+            echo "ContainerGroup nao ficou Running"
+            az container show -g $(AZ_RG) -n $(ACI_NAME) --query "containers[].instanceView.events" -o jsonc || true
+            exit 3
+          fi
+
+          FQDN=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "ipAddress.fqdn" -o tsv)
+          IP=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "ipAddress.ip" -o tsv)
+          echo "FQDN=$FQDN IP=$IP PORT=$(APP_PORT)"
+
+          curl -sS --max-time 10 "http://$FQDN:$(APP_PORT)/" >/dev/null || true
+
+          echo "##vso[task.complete result=Succeeded;]deploy_ok"
