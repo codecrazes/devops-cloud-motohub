@@ -68,6 +68,16 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           set -e
+          az provider register --namespace Microsoft.ContainerInstance --only-show-errors || true
+          az provider register --namespace Microsoft.ContainerRegistry --only-show-errors || true
+          az provider register --namespace Microsoft.Network --only-show-errors || true
+          az provider register --namespace Microsoft.Storage --only-show-errors || true
+          for i in $(seq 1 20); do
+            st=$(az provider show --namespace Microsoft.ContainerInstance --query registrationState -o tsv || echo NotRegistered)
+            [ "$st" = "Registered" ] && break
+            sleep 6
+          done
+          az group create -n $(AZ_RG) -l $(AZ_LOCATION) -o none
           ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --query loginServer -o tsv)
           IMAGE="$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)"
           az container delete -g $(AZ_RG) -n $(ACI_NAME) --yes || true
