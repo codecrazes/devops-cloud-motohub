@@ -100,7 +100,7 @@ stages:
               APP_PORT=$(APP_PORT) \
               DB_HOST=$(MYSQL_HOST) \
               DB_PORT=3306 \
-              SPRING_FLYWAY_ENABLED=true \
+              SPRING_FLYWAY_ENABLED=false \
               SPRING_JPA_HIBERNATE_DDL_AUTO=none \
               JAVA_TOOL_OPTIONS="-Dspring.datasource.url=$(SPRING_DATASOURCE_URL) -Dspring.datasource.username=$(SPRING_DATASOURCE_USERNAME) -Dspring.datasource.password=$(SPRING_DATASOURCE_PASSWORD)"
             --secure-environment-variables \
