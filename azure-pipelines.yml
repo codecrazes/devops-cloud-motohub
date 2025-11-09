@@ -99,8 +99,8 @@ stages:
               SPRING_JPA_HIBERNATE_DDL_AUTO=none \
               SPRING_DATASOURCE_URL="$DATASOURCE_URL" \
             --secure-environment-variables \
-              SPRING_DATASOURCE_USERNAME=$(MYSQL_USER) \
-              SPRING_DATASOURCE_PASSWORD=$(MYSQL_PASSWORD)
+              SPRING_DATASOURCE_USERNAME=$(SPRING_DATASOURCE_USERNAME) \
+              SPRING_DATASOURCE_PASSWORD=$(SPRING_DATASOURCE_PASSWORD)
           for i in $(seq 1 60); do
             ps=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "provisioningState" -o tsv || echo Unknown)
             st=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "instanceView.state" -o tsv || echo Unknown)
