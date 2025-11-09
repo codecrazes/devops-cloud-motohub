@@ -1,12 +1,13 @@
 package br.com.fiap.motohub;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.springframework.boot.test.context.SpringBootTest;
 
-public class MotohubApplicationTests {
+@SpringBootTest
+class MotohubApplicationTests {
 
-    @Test
-    void smokeTest() {
-        assertTrue(true);
-    }
+	@Test
+	void contextLoads() {
+	}
+
 }
