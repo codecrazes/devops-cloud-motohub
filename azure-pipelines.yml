@@ -98,13 +98,11 @@ stages:
             --ports $(APP_PORT) \
             --environment-variables \
               APP_PORT=$(APP_PORT) \
-              MYSQL_HOST=$(MYSQL_HOST) \
               DB_HOST=$(MYSQL_HOST) \
               DB_PORT=3306 \
-              SPRING_DATASOURCE_URL=$(SPRING_DATASOURCE_URL) \
-              SPRING_FLYWAY_ENABLED=$(SPRING_FLYWAY_ENABLED) \
-              SPRING_JPA_HIBERNATE_DDL_AUTO=$(SPRING_JPA_HIBERNATE_DDL_AUTO) \
-              JAVA_TOOL_OPTIONS="-Xms256m -Xmx512m" \
+              SPRING_FLYWAY_ENABLED=true \
+              SPRING_JPA_HIBERNATE_DDL_AUTO=none \
+              JAVA_TOOL_OPTIONS="-Dspring.datasource.url=$(SPRING_DATASOURCE_URL) -Dspring.datasource.username=$(SPRING_DATASOURCE_USERNAME) -Dspring.datasource.password=$(SPRING_DATASOURCE_PASSWORD)"
             --secure-environment-variables \
               SPRING_DATASOURCE_USERNAME=$(SPRING_DATASOURCE_USERNAME) \
               SPRING_DATASOURCE_PASSWORD=$(SPRING_DATASOURCE_PASSWORD)
