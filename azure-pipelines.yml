@@ -95,7 +95,7 @@ stages:
               APP_PORT=$(APP_PORT) \
               DB_HOST=$(MYSQL_HOST) \
               DB_PORT=3306 \
-              SPRING_FLYWAY_ENABLED=true \
+              SPRING_FLYWAY_ENABLED=false \
               SPRING_JPA_HIBERNATE_DDL_AUTO=none \
               SPRING_DATASOURCE_URL="$DATASOURCE_URL" \
             --secure-environment-variables \
