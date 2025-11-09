@@ -198,4 +198,3 @@ export API_BASE="http://motohub-rm558883.brazilsouth.azurecontainer.io:8080"
 
 - **Build falha por Docker local**  
   Alternativa: usar **GitHub Actions** para build & push no ACR (workflow de `docker/build-push-action`).
-.
