@@ -99,6 +99,8 @@ stages:
             --environment-variables \
               APP_PORT=$(APP_PORT) \
               MYSQL_HOST=$(MYSQL_HOST) \
+              DB_HOST=$(MYSQL_HOST) \
+              DB_PORT=3306 \
               SPRING_DATASOURCE_URL=$(SPRING_DATASOURCE_URL) \
               SPRING_FLYWAY_ENABLED=$(SPRING_FLYWAY_ENABLED) \
               SPRING_JPA_HIBERNATE_DDL_AUTO=$(SPRING_JPA_HIBERNATE_DDL_AUTO) \
