@@ -68,7 +68,7 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           set -euo pipefail
-          if [ -z "$(ACI_NAME)" ] || [ -z "$(DNS_LABEL)" ]; then
+          if [ -z "$(ACI_NAME)" ] || [ -z "$(DNS_LABEL)" ] || [ -z "$(MYSQL_HOST)" ]; then
             exit 2
           fi
           st=$(az provider show --namespace Microsoft.ContainerInstance --query registrationState -o tsv || echo NotRegistered)
@@ -77,6 +77,7 @@ stages:
           ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --query loginServer -o tsv)
           IMAGE="$ACR_LOGIN_SERVER/motohub:$(Build.BuildId)"
           az container delete -g $(AZ_RG) -n $(ACI_NAME) --yes || true
+          DATASOURCE_URL="jdbc:mysql://$(MYSQL_HOST):3306/$(MYSQL_DB)?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
           az container create \
             -g $(AZ_RG) \
             -n $(ACI_NAME) \
@@ -92,12 +93,14 @@ stages:
             --ports $(APP_PORT) \
             --environment-variables \
               APP_PORT=$(APP_PORT) \
-              SPRING_FLYWAY_ENABLED=false \
+              DB_HOST=$(MYSQL_HOST) \
+              DB_PORT=3306 \
+              SPRING_FLYWAY_ENABLED=true \
               SPRING_JPA_HIBERNATE_DDL_AUTO=none \
-              SPRING_DATASOURCE_URL=$(SPRING_DATASOURCE_URL) \
+              SPRING_DATASOURCE_URL="$DATASOURCE_URL" \
             --secure-environment-variables \
-              SPRING_DATASOURCE_USERNAME=$(SPRING_DATASOURCE_USERNAME) \
-              SPRING_DATASOURCE_PASSWORD=$(SPRING_DATASOURCE_PASSWORD)
+              SPRING_DATASOURCE_USERNAME=$(MYSQL_USER) \
+              SPRING_DATASOURCE_PASSWORD=$(MYSQL_PASSWORD)
           for i in $(seq 1 60); do
             ps=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "provisioningState" -o tsv || echo Unknown)
             st=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "instanceView.state" -o tsv || echo Unknown)
@@ -108,6 +111,7 @@ stages:
           st=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "instanceView.state" -o tsv || echo Unknown)
           if [ "$ps" != "Succeeded" ] || [ "$st" != "Running" ]; then
             az container show -g $(AZ_RG) -n $(ACI_NAME) --query "containers[].instanceView.events" -o jsonc || true
+            az container logs -g $(AZ_RG) -n $(ACI_NAME) --container-name motohub-api || true
             exit 3
           fi
           FQDN=$(az container show -g $(AZ_RG) -n $(ACI_NAME) --query "ipAddress.fqdn" -o tsv)
