@@ -34,10 +34,17 @@ stages:
         jdkDirectory: /usr/lib/jvm/java-17-openjdk-amd64
         jdkArchitectureOption: x64
 
+    - task: CopyFiles@2
+      displayName: Copy JAR to Staging
+      inputs:
+        SourceFolder: app/target
+        Contents: '*.jar'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
     - task: PublishBuildArtifacts@1
       displayName: Publish JAR Artifact
       inputs:
-        pathToPublish: app/target/*.jar
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
         artifactName: drop
         publishLocation: Container
 
@@ -47,9 +54,6 @@ stages:
   jobs:
   - job: BuildAndPushImage
     steps:
-    - download: current
-      artifact: drop
-
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
@@ -73,16 +77,6 @@ stages:
       env:
         SPRING_DATASOURCE_USERNAME: $(SPRING_DATASOURCE_USERNAME)
         SPRING_DATASOURCE_PASSWORD: $(SPRING_DATASOURCE_PASSWORD)
-        MYSQL_HOST: $(MYSQL_HOST)
-        MYSQL_DB: $(MYSQL_DB)
-        AZ_RG: $(AZ_RG)
-        AZ_LOCATION: $(AZ_LOCATION)
-        ACR_NAME: $(ACR_NAME)
-        ACI_NAME: $(ACI_NAME)
-        DNS_LABEL: $(DNS_LABEL)
-        APP_PORT: $(APP_PORT)
-        ACR_USERNAME: $(ACR_USERNAME)
-        ACR_PASSWORD: $(ACR_PASSWORD)
       inputs:
         azureSubscription: sc-azurerm-motohub
         scriptType: bash
@@ -90,39 +84,39 @@ stages:
         inlineScript: |
           set -euo pipefail
 
-          if [ -z "${ACI_NAME}" ] || [ -z "${DNS_LABEL}" ] || [ -z "${MYSQL_HOST}" ]; then
-            echo "Variáveis obrigatórias não definidas."
+          if [ -z "$(ACI_NAME)" ] || [ -z "$(DNS_LABEL)" ] || [ -z "$(MYSQL_HOST)" ]; then
+            echo "Variáveis obrigatórias (ACI_NAME, DNS_LABEL, MYSQL_HOST) não definidas."
             exit 2
           fi
 
           st=$(az provider show --namespace Microsoft.ContainerInstance --query registrationState -o tsv || echo NotRegistered)
           [ "$st" = "Registered" ] || exit 2
 
-          az group create -n "${AZ_RG}" -l "${AZ_LOCATION}" -o none
+          az group create -n "$(AZ_RG)" -l "$(AZ_LOCATION)" -o none
 
-          ACR_LOGIN_SERVER=$(az acr show --name "${ACR_NAME}" --query loginServer -o tsv)
+          ACR_LOGIN_SERVER=$(az acr show --name "$(ACR_NAME)" --query loginServer -o tsv)
           IMAGE="${ACR_LOGIN_SERVER}/motohub:$(Build.BuildId)"
 
-          az container delete -g "${AZ_RG}" -n "${ACI_NAME}" --yes || true
+          az container delete -g "$(AZ_RG)" -n "$(ACI_NAME)" --yes || true
 
-          DATASOURCE_URL="jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DB}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+          DATASOURCE_URL="jdbc:mysql://$(MYSQL_HOST):3306/$(MYSQL_DB)?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
 
           az container create \
-            -g "${AZ_RG}" \
-            -n "${ACI_NAME}" \
+            -g "$(AZ_RG)" \
+            -n "$(ACI_NAME)" \
             --image "${IMAGE}" \
             --cpu 1 \
             --memory 1.5 \
             --os-type Linux \
             --restart-policy Always \
             --registry-login-server "${ACR_LOGIN_SERVER}" \
-            --registry-username "${ACR_USERNAME}" \
-            --registry-password "${ACR_PASSWORD}" \
-            --dns-name-label "${DNS_LABEL}" \
-            --ports "${APP_PORT}" \
+            --registry-username "$(ACR_USERNAME)" \
+            --registry-password "$(ACR_PASSWORD)" \
+            --dns-name-label "$(DNS_LABEL)" \
+            --ports "$(APP_PORT)" \
             --environment-variables \
-              APP_PORT="${APP_PORT}" \
-              DB_HOST="${MYSQL_HOST}" \
+              APP_PORT="$(APP_PORT)" \
+              DB_HOST="$(MYSQL_HOST)" \
               DB_PORT=3306 \
               SPRING_FLYWAY_ENABLED=false \
               SPRING_JPA_HIBERNATE_DDL_AUTO=none \
@@ -132,20 +126,21 @@ stages:
               SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
 
           for i in $(seq 1 60); do
-            ps=$(az container show -g "${AZ_RG}" -n "${ACI_NAME}" --query "provisioningState" -o tsv || echo Unknown)
-            st=$(az container show -g "${AZ_RG}" -n "${ACI_NAME}" --query "instanceView.state" -o tsv || echo Unknown)
+            ps=$(az container show -g "$(AZ_RG)" -n "$(ACI_NAME)" --query "provisioningState" -o tsv || echo Unknown)
+            st=$(az container show -g "$(AZ_RG)" -n "$(ACI_NAME)" --query "instanceView.state" -o tsv || echo Unknown)
             [ "$ps" = "Succeeded" ] && [ "$st" = "Running" ] && break
             sleep 5
           done
 
-          ps=$(az container show -g "${AZ_RG}" -n "${ACI_NAME}" --query "provisioningState" -o tsv || echo Unknown)
-          st=$(az container show -g "${AZ_RG}" -n "${ACI_NAME}" --query "instanceView.state" -o tsv || echo Unknown)
+          ps=$(az container show -g "$(AZ_RG)" -n "$(ACI_NAME)" --query "provisioningState" -o tsv || echo Unknown)
+          st=$(az container show -g "$(AZ_RG)" -n "$(ACI_NAME)" --query "instanceView.state" -o tsv || echo Unknown)
 
           if [ "$ps" != "Succeeded" ] || [ "$st" != "Running" ]; then
-            az container show -g "${AZ_RG}" -n "${ACI_NAME}" --query "containers[].instanceView.events" -o jsonc || true
-            az container logs -g "${AZ_RG}" -n "${ACI_NAME}" --container-name motohub-api || true
+            echo "Container não ficou em estado Succeeded/Running. Logs abaixo:"
+            az container show -g "$(AZ_RG)" -n "$(ACI_NAME)" --query "containers[].instanceView.events" -o jsonc || true
+            az container logs -g "$(AZ_RG)" -n "$(ACI_NAME)" --container-name motohub-api || true
             exit 3
           fi
 
-          FQDN=$(az container show -g "${AZ_RG}" -n "${ACI_NAME}" --query "ipAddress.fqdn" -o tsv)
-          echo "FQDN=${FQDN} PORT=${APP_PORT}"
+          FQDN=$(az container show -g "$(AZ_RG)" -n "$(ACI_NAME)" --query "ipAddress.fqdn" -o tsv)
+          echo "Aplicação disponível em: http://${FQDN}:$(APP_PORT)"
